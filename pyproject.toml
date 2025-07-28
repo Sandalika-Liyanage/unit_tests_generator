@@ -1,15 +1,17 @@
 [project]
-name = "qodo-cover-test"
+name = "testgpt"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "cover-agent",
-    "fastapi>=0.115.14",
+    "dotenv>=0.9.9",
+    "fastapi>=0.116.1",
+    "langchain>=0.3.26",
+    "langchain-core>=0.3.71",
+    "langchain-openai>=0.3.28",
+    "langgraph>=0.5.4",
+    "openai>=1.97.1",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
 ]
-
-[tool.uv.sources]
-cover-agent = { git = "https://github.com/qodo-ai/qodo-cover.git" }
