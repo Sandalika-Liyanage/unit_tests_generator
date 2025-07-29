@@ -366,7 +366,7 @@ if __name__ == "__main__":
     output_dir = "generated_tests"
     
     # Validate API key
-    if not OPENAI_API_KEY or OPENAI_API_KEY == "your-api-key-here":
+    if not OPENAI_API_KEY :
         print("❌ Please set your OpenAI API key!")
         print("Either set the OPENAI_API_KEY environment variable or update the .env file.")
         exit(1)
