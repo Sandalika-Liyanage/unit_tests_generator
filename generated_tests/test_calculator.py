@@ -11,21 +11,19 @@ from calculator import Calculator
 
 def test_addition_of_two_valid_numbers():
     """
-    Test case for the function Calculator.add
+    Test case for the addition of two valid numbers
     This test validates the addition of two valid numbers
     """
-    # Test inputs
+    # Arrange
     a = 5.0
     b = 3.0
-
-    # Expected output
     expected_output = 8.0
 
-    # Call the function with the test inputs
-    actual_output = Calculator.add(a, b)
+    # Act
+    result = Calculator.add(a, b)
 
-    # Assert that the actual output is as expected
-    assert actual_output == expected_output, f"For inputs {a} and {b}, expected output was {expected_output} but got {actual_output}"
+    # Assert
+    assert result == expected_output, f"Expected {expected_output}, but got {result}"
 
 # Test 2
 import pytest
@@ -33,8 +31,7 @@ from calculator import Calculator
 
 def test_add_non_numeric_values():
     """
-    Test the addition of non-numeric values in the Calculator class.
-    The test validates the error handling when non-numeric values are added.
+    This test validates the error handling when non-numeric values are added.
     """
     with pytest.raises(TypeError):
         Calculator.add('a', 'b')
@@ -45,7 +42,7 @@ from calculator import Calculator
 
 def test_subtraction_of_two_valid_numbers():
     """
-    This test validates the subtraction of two valid numbers
+    Test case for the subtraction of two valid numbers
     """
     # Arrange
     a = 5.0
@@ -64,7 +61,7 @@ from Calculator import Calculator
 
 def test_subtraction_of_non_numeric_values():
     """
-    Test case for the subtraction of non-numeric values in the Calculator class.
+    Test case for the subtraction of non-numeric values in the Calculator.subtract function.
     This test validates the error handling when non-numeric values are subtracted.
     """
     with pytest.raises(TypeError):
@@ -80,25 +77,26 @@ def test_multiply():
 
     This test validates the multiplication of two valid numbers.
     """
-    # Arrange
+    # Test inputs
     a = 5.0
     b = 3.0
+
+    # Expected output
     expected_output = 15.0
 
-    # Act
-    result = Calculator.multiply(a, b)
+    # Call the function with the test inputs
+    actual_output = Calculator.multiply(a, b)
 
-    # Assert
-    assert result == expected_output, f"For inputs {a} and {b}, expected output is {expected_output} but got {result}"
+    # Assert that the actual output is as expected
+    assert actual_output == expected_output, f"For inputs {a} and {b}, expected output was {expected_output} but got {actual_output}"
 
 # Test 6
 import pytest
-from calculator import Calculator
+from Calculator import Calculator
 
 def test_multiply_non_numeric_values():
     """
-    Test case for the function Calculator.multiply to validate the error handling 
-    when non-numeric values are multiplied.
+    Test case for the function Calculator.multiply to validate the error handling when non-numeric values are multiplied.
     """
     with pytest.raises(TypeError):
         Calculator.multiply('a', 'b')
@@ -112,24 +110,24 @@ def test_division_of_two_valid_numbers():
     Test case for the division of two valid numbers
     """
     # Test inputs
-    a = 10.0
-    b = 2.0
+    a = 6.0
+    b = 3.0
 
     # Expected output
-    expected_output = 5.0
+    expected_output = 2.0
 
     # Perform the operation
     result = Calculator.divide(a, b)
 
     # Assert that the result is as expected
-    assert result == expected_output, f"Expected {expected_output}, but got {result}"
+    assert result == expected_output, f"For {a} divided by {b}, expected {expected_output} but got {result}"
 
 def test_division_by_zero():
     """
     Test case for division by zero
     """
     # Test inputs
-    a = 10.0
+    a = 6.0
     b = 0.0
 
     # Assert that a ZeroDivisionError is raised
@@ -142,8 +140,7 @@ from calculator import Calculator
 
 def test_division_by_zero():
     """
-    Test case for the division of a number by zero.
-    This test validates the error handling when a number is divided by zero.
+    This test validates the edge case of dividing a number by zero.
     """
     with pytest.raises(ZeroDivisionError) as e:
         Calculator.divide(5.0, 0.0)
@@ -156,7 +153,9 @@ from calculator import Calculator
 def test_division_of_non_numeric_values():
     """
     Test case for the division of non-numeric values in the Calculator class.
+
     This test validates the error handling when non-numeric values are divided.
+    The expected output is a TypeError.
     """
     with pytest.raises(TypeError):
         Calculator.divide('a', 'b')
@@ -167,9 +166,8 @@ from calculator import Calculator
 
 def test_calculator_power():
     """
-    Test case for the power function of the Calculator class.
-    
-    This test validates raising a valid base to a valid exponent.
+    Test the power function of the Calculator class with valid inputs.
+    The function should return the correct result of raising the base to the exponent.
     """
     # Arrange
     base = 2.0
@@ -186,12 +184,9 @@ def test_calculator_power():
 import pytest
 from calculator import Calculator
 
-def test_power_non_numeric():
+def test_power_non_numeric_values():
     """
-    Test case for the power function of the Calculator class.
-    
     This test validates the error handling when non-numeric values are raised to a power.
-    The function should raise a TypeError when non-numeric values are provided as input.
     """
     with pytest.raises(TypeError):
         Calculator.power('a', 'b')
@@ -200,41 +195,32 @@ def test_power_non_numeric():
 import pytest
 from calculator import Calculator
 
-def test_calculator_sqrt():
+def test_sqrt_valid_number():
     """
-    Test case for the sqrt function of the Calculator class.
-    
-    This test case will pass a valid number to the sqrt function and 
-    compare the result to the expected output.
+    Test case for the function Calculator.sqrt
+
+    This test validates the square root function with a valid number.
+    The test is of high priority and is a unit test.
+    No setup is required for this test.
+    The test inputs are (4.0) and the expected output is 2.0.
     """
-    # Test input
-    test_input = 9.0
-    # Expected output
-    expected_output = 3.0
+    # Arrange
+    input_value = 4.0
+    expected_output = 2.0
 
-    # Call the sqrt function with the test input
-    result = Calculator.sqrt(test_input)
+    # Act
+    actual_output = Calculator.sqrt(input_value)
 
-    # Assert that the result is equal to the expected output
-    assert result == expected_output, f"For input {test_input}, expected output was {expected_output}, but got {result}"
-
-    # Edge case: Test with negative number, should raise ValueError
-    with pytest.raises(ValueError):
-        Calculator.sqrt(-1)
-
-    # Edge case: Test with zero, should return zero
-    assert Calculator.sqrt(0) == 0
+    # Assert
+    assert actual_output == expected_output, f"For input {input_value}, expected output is {expected_output} but got {actual_output}"
 
 # Test 13
 import pytest
 from calculator import Calculator
 
-def test_calculator_sqrt_negative_number():
+def test_sqrt_negative_number():
     """
-    Test case for the function Calculator.sqrt
-
-    This test validates the error handling when calculating the square root of a negative number.
-    The function should raise a ValueError when trying to calculate the square root of a negative number.
+    This test validates the error handling when calculating the square root of a negative number
     """
     with pytest.raises(ValueError):
         Calculator.sqrt(-1.0)
@@ -243,12 +229,14 @@ def test_calculator_sqrt_negative_number():
 import pytest
 from calculator import Calculator
 
-def test_calculator_sqrt_non_numeric():
+def test_sqrt_non_numeric():
     """
     Test case for the function Calculator.sqrt
 
     This test validates the error handling when calculating the square root of a non-numeric value.
-    The function should raise a TypeError when the input is not a number.
+    The test is of high priority and belongs to the error_handling test type.
+    No setup is required for this test.
+    The input for this test is a non-numeric value 'a' and the expected output is a TypeError.
     """
     with pytest.raises(TypeError):
         Calculator.sqrt('a')
@@ -257,10 +245,10 @@ def test_calculator_sqrt_non_numeric():
 import pytest
 from calculator import Calculator
 
-def test_addition_of_two_zero_values():
+def test_addition_of_two_zero_numbers():
     """
-    Test case for the addition of two zero values.
-    This is an edge case test.
+    Test case for the addition of two zero numbers.
+    This is an edge case test where we are testing the functionality of the add method with zero inputs.
     """
     # Test inputs
     a = 0.0
@@ -269,7 +257,7 @@ def test_addition_of_two_zero_values():
     # Expected output
     expected_output = 0.0
 
-    # Call the method to test
+    # Call the method with the test inputs
     result = Calculator.add(a, b)
 
     # Assert that the result is as expected
@@ -277,35 +265,25 @@ def test_addition_of_two_zero_values():
 
 # Test 16
 import pytest
-from Calculator import Calculator
+from calculator import Calculator
 
-def test_subtraction_of_zero_from_a_number():
+def test_subtraction_of_two_zero_numbers():
     """
-    This test validates the edge case of subtracting zero from a number.
+    Test case for the edge case of subtracting two zero numbers.
+    The expected output is 0.0
     """
-    # Test inputs
-    a = 5.0
-    b = 0.0
-
-    # Expected output
-    expected_output = 5.0
-
-    # Perform the operation
-    result = Calculator.subtract(a, b)
-
-    # Assert that the result is as expected
-    assert result == expected_output, f"Expected {expected_output}, but got {result}"
+    result = Calculator.subtract(0.0, 0.0)
+    assert result == 0.0, "Expected result is 0.0"
 
 # Test 17
 import pytest
-from calculator import Calculator
+from Calculator import Calculator
 
 def test_multiply_by_zero():
     """
     Test case for the function Calculator.multiply
 
     This test validates the edge case of multiplying a number by zero.
-    The expected output is 0.0 as any number multiplied by zero is zero.
     """
     # Test inputs
     a = 5.0
@@ -324,48 +302,35 @@ def test_multiply_by_zero():
 import pytest
 from calculator import Calculator
 
-def test_division_by_one():
+def test_raising_zero_to_any_power():
     """
-    Test case for the function Calculator.divide
-
-    This test validates the edge case of dividing a number by one.
+    Test case for the power function of the Calculator class.
+    
+    This test validates the edge case of raising zero to any power.
+    The expected output is 0.0.
     """
     # Test inputs
-    a = 5.0
-    b = 1.0
+    base = 0.0
+    exponent = 3.0
 
     # Expected output
-    expected_output = 5.0
+    expected_output = 0.0
 
     # Call the function with the test inputs
-    actual_output = Calculator.divide(a, b)
+    result = Calculator.power(base, exponent)
 
-    # Assert that the actual output is equal to the expected output
-    assert actual_output == expected_output, f"For inputs {a} and {b}, expected output is {expected_output} but got {actual_output}"
+    # Assert that the function output is as expected
+    assert result == expected_output, f"For input ({base}, {exponent}), expected output was {expected_output}, but got {result}"
 
 # Test 19
 import pytest
 from calculator import Calculator
 
-def test_power_zero():
-    """
-    Test case for the power function of the Calculator class.
-    
-    This test validates the edge case of raising a number to the power of zero.
-    The expected result of any number raised to the power of zero is 1.0.
-    """
-    result = Calculator.power(5.0, 0.0)
-    assert result == 1.0, "The result of any number raised to the power of zero should be 1.0"
-
-# Test 20
-import pytest
-from calculator import Calculator
-
-def test_calculating_square_root_of_zero():
+def test_calculator_sqrt_zero():
     """
     Test case for the edge case of calculating the square root of zero.
-    Expected output is 0.0
+    The expected output is 0.0.
     """
     result = Calculator.sqrt(0.0)
-    assert result == 0.0, "Square root of zero should be zero"
+    assert result == 0.0, "The square root of zero should be zero"
 

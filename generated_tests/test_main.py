@@ -10,11 +10,13 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    return TestClient(app)
 
-def test_read_root():
+def test_read_root_happy_path(client):
     """
-    This test validates that the read_root function returns a welcome message
+    Validate that the function returns a welcome message when called without any parameters
     """
     response = client.get("/")
     assert response.status_code == 200
@@ -23,35 +25,44 @@ def test_read_root():
 # Test 2
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
-from app.calculator import Calculator
+from main import app
+from unittest.mock import patch
 
 client = TestClient(app)
 
-def test_add_function_with_valid_numbers():
+@patch('main.Calculator.add')
+def test_add_happy_path(mock_add):
     """
-    This test validates that the add function correctly adds two numbers
+    Test the add function to ensure it correctly adds two numbers.
     """
-    response = client.get("/add", params={"a": 5, "b": 3})
+    # Arrange
+    test_inputs = {"a": 5, "b": 3}
+    expected_output = 8
+    mock_add.return_value = expected_output
+
+    # Act
+    response = client.get("/add", params=test_inputs)
+
+    # Assert
     assert response.status_code == 200
-    assert response.json() == {"result": 8}
+    assert response.json() == {"result": expected_output}
+    mock_add.assert_called_once_with(test_inputs["a"], test_inputs["b"])
 
 # Test 3
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_add_invalid_inputs():
+def test_add_type_error():
     """
-    Test add function with invalid inputs.
-    This test validates that the add function throws a type error when one or both parameters are not numbers.
+    Validate that the function raises a type error when one or both parameters are not numbers
     """
     response = client.get("/add", params={"a": "five", "b": 3})
     assert response.status_code == 422
-    assert response.json() == {"detail": [{"loc": ["query", "a"], "msg": "value is not a valid float", "type": "type_error.float"}]}
+    assert "detail" in response.json()
+    assert any(error.get('type') == 'type_error.float' for error in response.json().get('detail'))
 
 # Test 4
 import pytest
@@ -61,31 +72,29 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_subtract():
+def test_subtract_happy_path():
     """
-    Test the subtract function with valid numbers.
-    This test validates that the subtract function correctly subtracts two numbers.
+    Test the subtract function to ensure it correctly subtracts two numbers.
     """
-    response = client.get("/subtract?a=5&b=3")
+    response = client.get("/subtract", params={"a": 5, "b": 3})
     assert response.status_code == 200
     assert response.json() == {"result": 2}
 
 def test_subtract_edge_case():
     """
-    Test the subtract function with edge case.
-    This test validates that the subtract function correctly handles edge cases.
+    Test the subtract function with edge case where both numbers are the same.
     """
-    response = client.get("/subtract?a=5&b=5")
+    response = client.get("/subtract", params={"a": 5, "b": 5})
     assert response.status_code == 200
     assert response.json() == {"result": 0}
 
-def test_subtract_invalid_input():
+def test_subtract_negative_result():
     """
-    Test the subtract function with invalid input.
-    This test validates that the subtract function correctly handles invalid input.
+    Test the subtract function where the result is a negative number.
     """
-    response = client.get("/subtract?a=5&b=abc")
-    assert response.status_code == 422
+    response = client.get("/subtract", params={"a": 3, "b": 5})
+    assert response.status_code == 200
+    assert response.json() == {"result": -2}
 
 # Test 5
 import pytest
@@ -95,15 +104,15 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_subtract_with_invalid_inputs():
+def test_subtract_type_error():
     """
-    This test validates that the subtract function throws a type error 
-    when one or both parameters are not numbers
+    Test to validate that the subtract function raises a TypeError when one or both parameters are not numbers.
     """
-    response = client.get("/subtract?a=five&b=3")
+    response = client.get("/subtract", params={"a": "five", "b": 3})
     assert response.status_code == 422
     assert "detail" in response.json()
-    assert "value is not a valid float" in str(response.json()["detail"])
+    assert "value_error.number.not_a_real" in str(response.json()["detail"])
+    assert "a" in str(response.json()["detail"])
 
 # Test 6
 import pytest
@@ -113,98 +122,42 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_multiply():
+def test_multiply_happy_path():
     """
-    This test validates that the multiply function correctly multiplies two numbers
+    Test case for the multiply function.
+    This test validates that the function returns the product of two numbers.
     """
-    response = client.get("/multiply", params={"a": 5, "b": 3})
-    assert response.status_code == 200
-    assert response.json() == {"result": 15}
+    # Define the test inputs
+    test_inputs = {"a": 5, "b": 3}
+    # Define the expected output
+    expected_output = {"result": 15}
 
-def test_multiply_zero():
-    """
-    This test validates that the multiply function correctly handles multiplication by zero
-    """
-    response = client.get("/multiply", params={"a": 5, "b": 0})
-    assert response.status_code == 200
-    assert response.json() == {"result": 0}
+    # Call the multiply function with the test inputs
+    response = client.get("/multiply", params=test_inputs)
 
-def test_multiply_negative():
-    """
-    This test validates that the multiply function correctly handles multiplication of negative numbers
-    """
-    response = client.get("/multiply", params={"a": -5, "b": 3})
+    # Assert that the response status code is 200 (OK)
     assert response.status_code == 200
-    assert response.json() == {"result": -15}
+    # Assert that the response data matches the expected output
+    assert response.json() == expected_output
 
 # Test 7
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_multiply_with_invalid_inputs():
+def test_multiply_type_error():
     """
-    This test validates that the multiply function throws a type error 
+    Test to validate that the multiply function raises a type error 
     when one or both parameters are not numbers
     """
     response = client.get("/multiply", params={"a": "five", "b": 3})
     assert response.status_code == 422
     assert "detail" in response.json()
-    assert "value is not a valid float" in str(response.json()["detail"])
+    assert any(error.get('type') == 'type_error.float' for error in response.json().get('detail'))
 
 # Test 8
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-from app.calculator import Calculator
-
-client = TestClient(app)
-
-def test_divide_function_with_valid_numbers():
-    """
-    This test validates that the divide function correctly divides two numbers
-    """
-    response = client.get("/divide", params={"a": 6, "b": 3})
-    assert response.status_code == 200
-    assert response.json() == {"result": 2}
-
-def test_divide_function_with_zero_division():
-    """
-    This test validates that the divide function correctly handles division by zero
-    """
-    response = client.get("/divide", params={"a": 6, "b": 0})
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Cannot divide by zero"}
-
-# Test 9
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-from app.calculator import Calculator
-
-client = TestClient(app)
-
-def test_divide_with_invalid_inputs():
-    """
-    This test validates that the divide function throws a type error 
-    when one or both parameters are not numbers
-    """
-    response = client.get("/divide", params={"a": "six", "b": 3})
-    assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {
-                "loc": ["query", "a"],
-                "msg": "value is not a valid float",
-                "type": "type_error.float",
-            }
-        ]
-    }
-
-# Test 10
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -212,11 +165,70 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_divide_function_with_zero_as_second_number():
+def test_divide_happy_path():
     """
-    This test validates that the divide function throws a ZeroDivisionError when the second number is zero
+    Test the divide function to ensure it correctly divides two numbers.
     """
-    response = client.get("/divide", params={"a": 6, "b": 0})
+    # Define the test inputs and expected output
+    test_inputs = {"a": 5, "b": 3}
+    expected_output = {"result": 1.6666666666666667}
+
+    # Call the divide function with the test inputs
+    response = client.get("/divide", params=test_inputs)
+
+    # Assert that the response status code is 200 (OK)
+    assert response.status_code == 200
+
+    # Assert that the function output matches the expected output
+    assert response.json() == expected_output
+
+def test_divide_by_zero():
+    """
+    Test the divide function with a zero denominator to ensure it raises an HTTPException.
+    """
+    # Define the test inputs
+    test_inputs = {"a": 5, "b": 0}
+
+    # Call the divide function with the test inputs
+    response = client.get("/divide", params=test_inputs)
+
+    # Assert that the response status code is 400 (Bad Request)
+    assert response.status_code == 400
+
+    # Assert that the response detail is "Cannot divide by zero"
+    assert response.json()["detail"] == "Cannot divide by zero"
+
+# Test 9
+import pytest
+from fastapi.testclient import TestClient
+from main import app
+from app.calculator import Calculator
+
+client = TestClient(app)
+
+def test_divide_type_error():
+    """
+    Validate that the function raises a type error when one or both parameters are not numbers
+    """
+    response = client.get("/divide", params={"a": "five", "b": 3})
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert "value is not a valid float" in str(response.json()["detail"])
+
+# Test 10
+import pytest
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_divide_by_zero():
+    """
+    Test to validate that the divide function raises a HTTPException with status code 400 
+    when the second number is zero.
+    """
+    response = client.get("/divide", params={"a": 5, "b": 0})
     assert response.status_code == 400
     assert response.json() == {"detail": "Cannot divide by zero"}
 
@@ -224,41 +236,36 @@ def test_divide_function_with_zero_as_second_number():
 import pytest
 from fastapi.testclient import TestClient
 from main import app, PowerRequest
-from unittest.mock import patch
 
 client = TestClient(app)
 
-@patch('main.Calculator.power')
-def test_power_function_with_valid_numbers(mock_power):
+def test_power_happy_path():
     """
-    This test validates that the power function correctly calculates the power of a number
+    Test case for power function
+    This test validates that the function returns the power of the base to the exponent
     """
-    mock_power.return_value = 8
-    request = PowerRequest(base=2, exponent=3)
+    request = PowerRequest(base=5, exponent=3)
     response = client.post("/power", json=request.dict())
     assert response.status_code == 200
-    assert response.json() == {"result": 8}
-    mock_power.assert_called_once_with(2, 3)
+    assert response.json() == {"result": 125}
 
 # Test 12
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.calculator import Calculator
-from pydantic import ValidationError
 
 client = TestClient(app)
 
-def test_power_function_with_invalid_inputs():
+def test_power_type_error():
     """
-    This test validates that the power function throws a type error 
+    Test to validate that the power function raises a type error 
     when one or both parameters are not numbers
     """
-    request = {'base': 'two', 'exponent': 3}
-    response = client.post("/power", json=request)
+    response = client.post("/power", json={"base": "five", "exponent": 3})
     assert response.status_code == 422
     assert "detail" in response.json()
-    assert any(error.get('type') == 'type_error.float' for error in response.json().get('detail'))
+    assert "value is not a valid float" in str(response.json()["detail"])
 
 # Test 13
 import pytest
@@ -268,70 +275,38 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_sqrt_function_with_valid_number():
+def test_sqrt_happy_path():
     """
-    This test validates that the sqrt function correctly calculates the square root of a number
+    Test case for the sqrt function
+    Validate that the function returns the square root of a number
     """
     # Arrange
-    request = {'number': 9}
-    expected_output = 3
+    test_input = {"number": 9}
+    expected_output = {"result": 3}
 
     # Act
-    response = client.post("/sqrt", json=request)
+    response = client.post("/sqrt", json=test_input)
 
     # Assert
     assert response.status_code == 200
-    assert response.json() == {"result": expected_output}
+    assert response.json() == expected_output
 
-def test_sqrt_function_with_negative_number():
+def test_sqrt_edge_case():
     """
-    This test validates that the sqrt function correctly handles negative numbers
+    Test case for the sqrt function
+    Validate that the function returns an error for negative numbers
     """
     # Arrange
-    request = {'number': -9}
+    test_input = {"number": -9}
 
     # Act
-    response = client.post("/sqrt", json=request)
+    response = client.post("/sqrt", json=test_input)
 
     # Assert
     assert response.status_code == 400
     assert "Cannot calculate square root of negative number" in response.text
 
-def test_sqrt_function_with_zero():
-    """
-    This test validates that the sqrt function correctly handles zero
-    """
-    # Arrange
-    request = {'number': 0}
-    expected_output = 0
-
-    # Act
-    response = client.post("/sqrt", json=request)
-
-    # Assert
-    assert response.status_code == 200
-    assert response.json() == {"result": expected_output}
-
 # Test 14
-import pytest
-from fastapi.testclient import TestClient
-from main import app
-from pydantic import ValidationError
-
-client = TestClient(app)
-
-def test_sqrt_function_with_invalid_input():
-    """
-    This test validates that the sqrt function throws a type error when the parameter is not a number
-    """
-    response = client.post("/sqrt", json={"number": "nine"})
-    assert response.status_code == 422
-    assert "detail" in response.json()
-    assert isinstance(response.json()["detail"], list)
-    assert "msg" in response.json()["detail"][0]
-    assert response.json()["detail"][0]["msg"] == "value is not a valid float"
-
-# Test 15
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -339,9 +314,28 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_sqrt_function_with_negative_number():
+def test_sqrt_type_error():
     """
-    This test validates that the sqrt function throws a ValueError when the parameter is a negative number
+    Test to validate that the sqrt function raises a TypeError when the parameter is not a number.
+    """
+    response = client.post("/sqrt", json={"number": "nine"})
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert "value is not a valid float" in str(response.json()["detail"])
+
+# Test 15
+import pytest
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from main import app
+from app.calculator import Calculator
+
+client = TestClient(app)
+
+def test_sqrt_negative_number():
+    """
+    Test to validate that the sqrt function raises a HTTPException with status code 400 
+    when the number is negative
     """
     response = client.post("/sqrt", json={"number": -9})
     assert response.status_code == 400
@@ -355,79 +349,97 @@ from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_calculate_function_with_valid_inputs():
+def test_calculate_happy_path():
     """
-    This test validates that the calculate function correctly performs various calculations based on operation type
+    Test the happy path of the calculate function.
+    This test validates that the function returns the result of the operation.
     """
-    response = client.get("/add", params={"a": 5, "b": 3})
+    # Arrange
+    request = {"a": 5, "b": 3}
+    operation = "add"
+    expected_output = 8
+
+    # Act
+    if operation == "add":
+        response = client.get("/add", params=request)
+
+    # Assert
     assert response.status_code == 200
-    assert response.json() == {"result": 8}
+    assert response.json() == {"result": expected_output}
 
 # Test 17
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from pydantic import ValidationError
+from app.calculator import Calculator
 
 client = TestClient(app)
 
-def test_calculate_function_with_invalid_inputs():
+def test_calculate_type_error():
     """
-    This test validates that the calculate function throws a type error when one or both parameters in the request are not numbers
+    Validate that the function raises a type error when one or both parameters in the request are not numbers
     """
     response = client.get("/add", params={"a": "five", "b": 3})
     assert response.status_code == 422
     assert "detail" in response.json()
-    assert isinstance(response.json()["detail"], list)
-    assert "msg" in response.json()["detail"][0]
-    assert response.json()["detail"][0]["msg"] == "value is not a valid float"
+    assert "value is not a valid float" in str(response.json()["detail"])
 
 # Test 18
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from main import app
-from app.calculator import Calculator
+from unittest.mock import patch, Mock
 
 client = TestClient(app)
 
-def test_calculate_invalid_operation():
+def test_calculate_unsupported_operation():
     """
-    This test validates that the calculate function throws an error when the operation is not a valid operation
+    Test to validate that the function raises a HTTPException with status code 400 
+    when the operation is not supported
     """
-    response = client.get("/invalid", json={"a": 5, "b": 3})
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
+    with patch('app.Calculator') as mock_calculator:
+        mock_calculator.mod.side_effect = AttributeError('Unsupported operation')
+        
+        response = client.get("/mod", json={"a": 5, "b": 3})
+        
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Unsupported operation"}
 
 # Test 19
 import pytest
+from fastapi import HTTPException
+from app.main import app
 from fastapi.testclient import TestClient
-from main import app
-from app.calculator import Calculator
+from unittest.mock import patch, Mock
 
 client = TestClient(app)
 
 def test_calculate_division_by_zero():
     """
-    This test validates that the calculate function throws a ZeroDivisionError 
+    Test to validate that the function raises a HTTPException with status code 400 
     when the operation is division and the second number is zero
     """
-    response = client.get("/divide", params={"a": 6, "b": 0})
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Cannot divide by zero"}
+    with patch('app.main.Calculator.divide', side_effect=ZeroDivisionError):
+        response = client.get("/divide", params={"a": 5, "b": 0})
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Cannot divide by zero"}
 
 # Test 20
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from main import app
-from app.calculator import Calculator
+from main import app, SquareRootRequest
 
 client = TestClient(app)
 
 def test_calculate_sqrt_negative_number():
     """
-    This test validates that the calculate function throws a ValueError when the operation is square root and the number is negative
+    Validate that the function raises a HTTPException with status code 400 
+    when the operation is square root and the number is negative
     """
-    response = client.post("/power", json={"number": -9})
+    request = SquareRootRequest(number=-9)
+    response = client.post("/sqrt", json=request.dict())
     assert response.status_code == 400
     assert response.json() == {"detail": "Cannot calculate square root of a negative number"}
 
